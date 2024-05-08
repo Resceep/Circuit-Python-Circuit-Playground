@@ -89,4 +89,6 @@ def execute(name):
           else:
             print("nothing was executed")
 
+execute(coolRobotName)
+
 print("done")
