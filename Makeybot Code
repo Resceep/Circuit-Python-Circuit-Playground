@@ -1,0 +1,92 @@
+import RPi.GPIO as GPIO
+from time import sleep
+import webbrowser
+import sys
+import requests
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
+
+global servo_pin
+servo_pin = 8
+global red_led
+red_led = 32
+global green_led
+green_led= 35
+global blue_led
+blue_led = 33
+red_pin = 16
+yellow_pin = 11
+green_pin 18
+
+global colorPins
+colorPins = {"led-1": red_pin, "led-2": yellow_pin, "led-3": green_pin}
+
+
+GPIO.setup(red_led, GPIO.OUT)
+GPIO.setup(green_led, GPIO.OUT)
+GPIO.setup(blue_led, GPIO.OUT)
+GPIO.setup(red_pin, GPIO.OUT)
+GPIO.setup(yellow_pin, GPIO.OUT)
+GPIO.setup(green_pin, GPIO.OUT)
+p = GPIO.PWM(servo_pin, GPIO.OUT)
+p.start(0)
+
+def rgb(value):
+  if value == "red":
+    GPIO.output(red_led, GPIO.HIGH)
+    GPIO.output(green_led, GPIO.LOW)
+    GPIO.output(blue_led, GPIO.LOW)
+    if value == "green":
+      GPIO.output(red_led, GPIO.LOW)
+      GPIO.output(green_led, GPIO.HIGH)
+      GPIO.output(blue_led, GPIO.LOW)
+    if value == "blue":
+      GPIO.output(red_led, GPIO.LOW)
+      GPIO.output(green_led, GPIO.LOW)
+      GPIO.output(blue_led, GPIO.HIGH)
+
+def servo():
+  p.ChangeDutyCycle(3)
+  sleep(1)
+  p.ChangeDutyCycle(12)
+  sleep(1)
+  p.stop
+
+robots_file = requests.get("https://www.steamclown.org/projects/QInlIj_vIHev/Huch_QIn/all_robots_command_requests.txt")
+print("Request successful")
+robots_file = robots_file.text
+robots_file = robots_file.splitlines()
+
+def execute(name):
+  if line.startswith(name):
+    line = line.split(",")
+    for parameter in line:
+      if parameter.startswith("API"):
+        print(line)
+        if line[5] == "on":
+          if (line[4] == "led-1") or (line[4] == "led-2") or (line[4] == "led-3"):
+            GPIO.output(colorPins[line[4]], GPIO.HIGH)
+            print("action executing")
+            sleep(1)
+          elif line[5] == "off":
+            if (line[4] == "led-1") or (line[4] == "led-2") or (line[4] == "led-3"):
+            GPIO.output(colorPins[line[4]], GPIO.LOW)
+            print("action executing")
+            sleep(1)
+          elif line[4] == "rgb-led":
+            if (line[5] == "red") or (line[5] == "green") or (line[5] == "blue"):
+              rgb(line[5])
+              print("action executing")
+              sleep(1)
+          elif line[4] == "servo":
+            if line[5] == "wave":
+              servo()
+              print("action executing")
+              sleep(1)
+            else: 
+              pass
+          else:
+            print("nothing was executed")
+
+print("done")
